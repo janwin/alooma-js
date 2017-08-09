@@ -2439,7 +2439,7 @@ AloomaLib.prototype.track = function(event_name, properties, callback) {
         , 'properties': properties
     };
 
-    var truncated_data  = _.truncate(data, this.get_config('truncate')
+    var truncated_data  = _.truncate(data, this.get_config('truncate'))
         , json_data     = _.JSONEncode(truncated_data)
         , encoded_data  = _.base64Encode(json_data);
 
@@ -2507,7 +2507,7 @@ AloomaLib.prototype.track = function(event_name, properties, callback) {
       var data = event_object || {};
       data['properties'] = properties;
 
-      var truncated_data  = _.truncate(data, this.get_config('truncate')
+      var truncated_data  = _.truncate(data, this.get_config('truncate'))
           , json_data     = _.JSONEncode(truncated_data)
           , encoded_data  = _.base64Encode(json_data);
 
@@ -3265,7 +3265,7 @@ AloomaPeople.prototype._send_request = function(data, callback) {
     data['$distinct_id'] = this._alooma.get_distinct_id();
 
     var date_encoded_data = _.encodeDates(data)
-      , truncated_data    = _.truncate(date_encoded_data, this.get_config('truncate')
+      , truncated_data    = _.truncate(date_encoded_data, this.get_config('truncate'))
       , json_data         = _.JSONEncode(date_encoded_data)
       , encoded_data      = _.base64Encode(json_data);
 

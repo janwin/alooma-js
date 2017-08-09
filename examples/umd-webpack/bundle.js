@@ -163,6 +163,7 @@
 	            , "secure_cookie":          false
 	            , "ip":                     true
 	            , "property_blacklist":     []
+	            , "truncate":               255
 	        };
 	    var DOM_LOADED = false;
 	    // UNDERSCORE
@@ -2245,7 +2246,7 @@
 	     * callback GET param.
 	     */
 	    AloomaLib.prototype._prepare_callback = function(callback, data) {
-	        if (_.isUndefined(callback)) {
+	        if (_.isUndefined(callback) || null === callback) {
 	            return null;
 	        }
 
@@ -2481,7 +2482,7 @@
 	            , 'properties': properties
 	        };
 
-	        var truncated_data  = _.truncate(data, 255)
+	        var truncated_data  = _.truncate(data, this.get_config('truncate'))
 	            , json_data     = _.JSONEncode(truncated_data)
 	            , encoded_data  = _.base64Encode(json_data);
 
@@ -2549,7 +2550,7 @@
 	          var data = event_object || {};
 	          data['properties'] = properties;
 
-	          var truncated_data  = _.truncate(data, 255)
+	          var truncated_data  = _.truncate(data, this.get_config('truncate'))
 	              , json_data     = _.JSONEncode(truncated_data)
 	              , encoded_data  = _.base64Encode(json_data);
 
@@ -3307,7 +3308,7 @@
 	        data['$distinct_id'] = this._alooma.get_distinct_id();
 
 	        var date_encoded_data = _.encodeDates(data)
-	          , truncated_data    = _.truncate(date_encoded_data, 255)
+	          , truncated_data    = _.truncate(date_encoded_data, this.get_config('truncate'))
 	          , json_data         = _.JSONEncode(date_encoded_data)
 	          , encoded_data      = _.base64Encode(json_data);
 
