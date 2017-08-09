@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var alooma = __webpack_require__(1);
 
@@ -57,9 +57,9 @@
 	alooma.track('Tracking after alooma.init');
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	(function (global, factory) {
 	     true ? module.exports = factory() :
@@ -4901,5 +4901,5 @@
 
 	}));
 
-/***/ }
+/***/ })
 /******/ ]);
