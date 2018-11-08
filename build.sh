@@ -19,8 +19,8 @@ java -jar $COMPILER --js alooma-jslib-snippet.js --js_output_file alooma-jslib-s
 java -jar $COMPILER --js alooma-jslib-snippet.js --js_output_file alooma-jslib-snippet.min.test.js --compilation_level ADVANCED_OPTIMIZATIONS --define='ALOOMA_LIB_URL="../alooma.min.js"'
 
 echo 'Bundling module-loader test runners'
-./node_modules/.bin/webpack tests/module-cjs.js tests/module-cjs.bundle.js
-./node_modules/.bin/browserify tests/module-es2015.js -t [ babelify --compact false ] --outfile tests/module-es2015.bundle.js
+./node_modules/.bin/webpack --mode production tests/module-cjs.js -o tests/module-cjs.bundle.js
+./node_modules/.bin/browserify tests/module-es2015.js -t [ babelify --presets [ @babel/preset-env ] ] --outfile tests/module-es2015.bundle.js
 
 echo 'Bundling module-loader examples'
 pushd examples/commonjs-browserify; npm install && npm run build; popd
