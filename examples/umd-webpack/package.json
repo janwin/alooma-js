@@ -4,12 +4,13 @@
   "description": "Alooma example: UMD/Webpack",
   "main": "index.js",
   "scripts": {
-    "build": "webpack index.js bundle.js",
+    "build": "webpack --mode production index.js -o bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "dev@alooma.com",
   "license": "Apache-2.0",
   "dependencies": {
-    "webpack": "^1.12.2"
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
   }
 }
