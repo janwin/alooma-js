@@ -1,8 +1,8 @@
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
-    global.alooma = factory();
-}(this, function () { 'use strict';
+    (global.alooma = factory());
+}(this, (function () { 'use strict';
 
     /*
      * Alooma JS Library
@@ -33,36 +33,46 @@
 
     var LIB_VERSION = '1.0.0';
 
-    var init_type;
-    var alooma_master;
-    var INIT_MODULE  = 0;
-    var INIT_SNIPPET = 1;
-    var ArrayProto     = Array.prototype;
-    var FuncProto      = Function.prototype;
-    var ObjProto       = Object.prototype;
-    var slice          = ArrayProto.slice;
-    var toString       = ObjProto.toString;
-    var hasOwnProperty = ObjProto.hasOwnProperty;
-    var windowConsole  = window.console;
-    var navigator      = window.navigator;
-    var document       = window.document;
-    var userAgent      = navigator.userAgent;
-    var PRIMARY_INSTANCE_NAME     = "alooma";
-    var SET_QUEUE_KEY             = "__mps";
-    var SET_ONCE_QUEUE_KEY        = "__mpso";
-    var ADD_QUEUE_KEY             = "__mpa";
-    var APPEND_QUEUE_KEY          = "__mpap";
-    var UNION_QUEUE_KEY           = "__mpu";
-    var SET_ACTION                = "$set";
-    var SET_ONCE_ACTION           = "$set_once";
-    var ADD_ACTION                = "$add";
-    var APPEND_ACTION             = "$append";
-    var UNION_ACTION              = "$union";
-    var PEOPLE_DISTINCT_ID_KEY    = "$people_distinct_id";
-    var ALIAS_ID_KEY              = "__alias";
-    var CAMPAIGN_IDS_KEY          = "__cmpns";
-    var EVENT_TIMERS_KEY          = "__timers";
-    var RESERVED_PROPERTIES       = [
+    var init_type,       // MODULE or SNIPPET loader
+        alooma_master; // main alooma instance / object
+    var INIT_MODULE  = 0,
+        INIT_SNIPPET = 1;
+
+    /*
+     * Saved references to long variable names, so that closure compiler can
+     * minimize file size.
+     */
+    var   ArrayProto     = Array.prototype
+        , FuncProto      = Function.prototype
+        , ObjProto       = Object.prototype
+        , slice          = ArrayProto.slice
+        , toString       = ObjProto.toString
+        , hasOwnProperty = ObjProto.hasOwnProperty
+        , windowConsole  = window.console
+        , navigator      = window.navigator
+        , document       = window.document
+        , userAgent      = navigator.userAgent;
+
+    /*
+     * Constants
+     */
+    /** @const */   var   PRIMARY_INSTANCE_NAME     = "alooma"
+    /** @const */       , SET_QUEUE_KEY             = "__mps"
+    /** @const */       , SET_ONCE_QUEUE_KEY        = "__mpso"
+    /** @const */       , ADD_QUEUE_KEY             = "__mpa"
+    /** @const */       , APPEND_QUEUE_KEY          = "__mpap"
+    /** @const */       , UNION_QUEUE_KEY           = "__mpu"
+    /** @const */       , SET_ACTION                = "$set"
+    /** @const */       , SET_ONCE_ACTION           = "$set_once"
+    /** @const */       , ADD_ACTION                = "$add"
+    /** @const */       , APPEND_ACTION             = "$append"
+    /** @const */       , UNION_ACTION              = "$union"
+    // This key is deprecated, but we want to check for it to see whether aliasing is allowed.
+    /** @const */       , PEOPLE_DISTINCT_ID_KEY    = "$people_distinct_id"
+    /** @const */       , ALIAS_ID_KEY              = "__alias"
+    /** @const */       , CAMPAIGN_IDS_KEY          = "__cmpns"
+    /** @const */       , EVENT_TIMERS_KEY          = "__timers"
+    /** @const */       , RESERVED_PROPERTIES       = [
                             SET_QUEUE_KEY,
                             SET_ONCE_QUEUE_KEY,
                             ADD_QUEUE_KEY,
@@ -73,13 +83,28 @@
                             CAMPAIGN_IDS_KEY,
                             EVENT_TIMERS_KEY
                         ];
-    var HTTP_PROTOCOL = (("https:" == document.location.protocol) ? "https://" : "http://");
-    var USE_XHR = (window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
-    var ENQUEUE_REQUESTS = !USE_XHR && (userAgent.indexOf('MSIE') == -1) && (userAgent.indexOf('Mozilla') == -1);
-    var _ = {};
-    var DEBUG = false;
-    var DEFAULT_CONFIG = {
-              "api_host":               HTTP_PROTOCOL + 'api.alooma.com'
+
+    /*
+     * Dynamic... constants? Is that an oxymoron?
+     */
+    var HTTP_PROTOCOL = (("https:" == document.location.protocol) ? "https://" : "http://"),
+
+        // http://hacks.mozilla.org/2009/07/cross-site-xmlhttprequest-with-cors/
+        // https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#withCredentials
+        USE_XHR = (window.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest()),
+
+        // IE<10 does not support cross-origin XHR's but script tags
+        // with defer won't block window.onload; ENQUEUE_REQUESTS
+        // should only be true for Opera<12
+        ENQUEUE_REQUESTS = !USE_XHR && (userAgent.indexOf('MSIE') == -1) && (userAgent.indexOf('Mozilla') == -1);
+
+    /*
+     * Module-level globals
+     */
+    var   _ = {}
+        , DEBUG = false
+        , DEFAULT_CONFIG = {
+              "api_host":               HTTP_PROTOCOL + 'inputs.alooma.com'
             , "cross_subdomain_cookie": true
             , "persistence":            "cookie"
             , "persistence_name":       ""
@@ -101,8 +126,9 @@
             , "ip":                     true
             , "property_blacklist":     []
             , "truncate":               255
-        };
-    var DOM_LOADED = false;
+        }
+        , DOM_LOADED = false;
+
     // UNDERSCORE
     // Embed part of the Underscore Library
 
@@ -112,6 +138,8 @@
             nativeIndexOf = ArrayProto.indexOf,
             nativeIsArray = Array.isArray,
             breaker = {};
+
+        var ctor = function(){};
 
         _.bind = function (func, context) {
             var args, bound;
@@ -138,8 +166,8 @@
         };
 
         /**
-         * @param {*=} obj
-         * @param {function(...[*])=} iterator
+         * @param {Object=} obj
+         * @param {function(...)=} iterator
          * @param {Object=} context
          */
         var each = _.each = function(obj, iterator, context) {
@@ -172,6 +200,9 @@
             return escaped;
         };
 
+        /**
+         * @type {function(Object, ...*):Object}
+         */
         _.extend = function(obj) {
             each(slice.call(arguments, 1), function(source) {
                 for (var prop in source) {
@@ -352,9 +383,7 @@
 
     _.JSONEncode = (function() {
         return function(mixed_val) {
-            var indent;
             var value = mixed_val;
-            var i;
 
             var quote = function (string) {
                 var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
@@ -496,7 +525,7 @@
                     text:    text
                 };
             },
-            next = function (c) {
+            next = function (/** *= */ c) {
                 // If a c parameter is provided, verify that it matches the current character.
                 if (c && c !== ch) {
                     error("Expected '" + c + "' instead of '" + ch + "'");
@@ -811,7 +840,7 @@
         // This function takes the user agent string, and then xors
         // together each sequence of 8 bytes.  This produces a final
         // sequence of 8 bytes which it returns as hex.
-        var UA = function(n) {
+        var UA = function() {
             var ua = userAgent, i, ch, buffer = [], ret = 0;
 
             function xor(result, byte_array) {
@@ -857,7 +886,7 @@
      * @param {string=} arg_separator
      */
     _.HTTPBuildQuery = function(formdata, arg_separator) {
-        var key, use_val, use_key, tmp_arr = [];
+        var use_val, use_key, tmp_arr = [];
 
         if (_.isUndefined(arg_separator)) {
             arg_separator = '&';
@@ -986,7 +1015,7 @@
         /**
          * @param {Object} element
          * @param {string} type
-         * @param {function(...[*])} handler
+         * @param {function(...)} handler
          * @param {boolean=} oldSchool
          */
         var register_event = function(element, type, handler, oldSchool) {
@@ -1031,16 +1060,14 @@
             };
 
             return handler;
-        };
-
+        }
         function fixEvent(event) {
             if (event) {
                 event.preventDefault = fixEvent.preventDefault;
                 event.stopPropagation = fixEvent.stopPropagation;
             }
             return event;
-        };
-        fixEvent.preventDefault = function() {
+        }    fixEvent.preventDefault = function() {
             this.returnValue = false;
         };
         fixEvent.stopPropagation = function() {
@@ -1218,8 +1245,7 @@
                 currentContext = found;
             }
             return currentContext;
-        };
-
+        }
         return getElementsBySelector;
     })();
 
@@ -1275,7 +1301,7 @@
          * include key words used in later checks.
          */
         browser: function(user_agent, vendor, opera) {
-            var vendor = vendor || ''; // vendor is undefined for at least IE9
+            vendor = vendor || ''; // vendor is undefined for at least IE9
             if (opera || _.includes(user_agent, " OPR/")) {
                 if (_.includes(user_agent, "Mini")) {
                     return "Opera Mini";
@@ -1430,7 +1456,7 @@
 
     // Console override
     var console = {
-        /** @type {function(...[*])} */
+        /** @type {function(...)} */
         log: function() {
             if (DEBUG && !_.isUndefined(windowConsole) && windowConsole) {
                 try {
@@ -1442,7 +1468,7 @@
                 }
             }
         },
-        /** @type {function(...[*])} */
+        /** @type {function(...)} */
         error: function() {
             if (DEBUG && !_.isUndefined(windowConsole) && windowConsole) {
                 var args = ["Alooma error:"].concat(_.toArray(arguments));
@@ -1455,7 +1481,7 @@
                 }
             }
         },
-        /** @type {function(...[*])} */
+        /** @type {function(...)} */
         critical: function() {
             if (!_.isUndefined(windowConsole) && windowConsole) {
                 var args = ["Alooma error:"].concat(_.toArray(arguments));
@@ -1490,7 +1516,7 @@
      * @param {string} query
      * @param {string} event_name
      * @param {Object=} properties
-     * @param {function(...[*])=} user_callback
+     * @param {function(...)=} user_callback
      */
     DomTracker.prototype.track = function(query, event_name, properties, user_callback) {
         var that = this
@@ -1521,7 +1547,7 @@
     };
 
     /**
-     * @param {function(...[*])} user_callback
+     * @param {function(...)} user_callback
      * @param {Object} props
      * @param {boolean=} timeout_occured
      */
@@ -1997,8 +2023,8 @@
         return this['props'][this._get_queue_key(queue)];
     };
     AloomaPersistence.prototype._get_or_create_queue = function(queue, default_val) {
-        var key = this._get_queue_key(queue),
-            default_val = _.isUndefined(default_val) ? {} : default_val;
+        var key = this._get_queue_key(queue);
+        default_val = _.isUndefined(default_val) ? {} : default_val;
 
         return this['props'][key] || (this['props'][key] = default_val);
     };
@@ -2509,7 +2535,6 @@
      * track_pageview configuration variable is false.
      *
      * @param {String} [page] The url of the page to record. If you don't include this, it defaults to the current url.
-     * @api private
      */
     AloomaLib.prototype.track_pageview = function(page) {
         if (_.isUndefined(page)) { page = document.location.href; }
@@ -2789,7 +2814,6 @@
      * This value will only be included in Streams data.
      *
      * @param {String} name_tag A human readable name for the user
-     * @api private
      */
     AloomaLib.prototype.name_tag = function(name_tag) {
         this._register_single('mp_name_tag', name_tag);
@@ -3245,7 +3269,7 @@
         data['$distinct_id'] = this._alooma.get_distinct_id();
 
         var date_encoded_data = _.encodeDates(data)
-          , truncated_data    = _.truncate(date_encoded_data, this.get_config('truncate'))
+          , truncated_data    = _.truncate(date_encoded_data, this._get_config('truncate'))
           , json_data         = _.JSONEncode(date_encoded_data)
           , encoded_data      = _.base64Encode(json_data);
 
@@ -3371,8 +3395,7 @@
                     }
                     if (!_.isUndefined(_append_callback)) { _append_callback(response, data); }
                 });
-            };
-            // Save the shortened append queue
+            }        // Save the shortened append queue
             _this._alooma['persistence'].save();
         }
     };
@@ -4309,7 +4332,7 @@
                         mqt += '\n' + mq + ' {' + create_style_text(mq_defs[mq]) + '\n}';
                     }
                     return mqt;
-                }
+                };
 
                 var style_text = create_style_text(styles) + create_media_query_text(media_queries),
                     head_el = document.head || document.getElementsByTagName('head')[0] || document.documentElement,
@@ -4335,20 +4358,7 @@
             self.yt_custom = 'postMessage' in window;
 
             // detect CSS compatibility
-            var sample_styles = document.createElement('div').style,
-                is_css_compatible = function(rule) {
-                    if (rule in sample_styles) {
-                        return true;
-                    }
-                    rule = rule[0].toUpperCase() + rule.slice(1);
-                    var props = ['O' + rule, 'ms' + rule, 'Webkit' + rule, 'Moz' + rule];
-                    for (var i = 0; i < props.length; i++) {
-                        if (props[i] in sample_styles) {
-                            return true;
-                        }
-                    }
-                    return false;
-                };
+            var sample_styles = document.createElement('div').style;
 
             self.dest_url = self.video_url;
             var youtube_match = self.video_url.match(
@@ -4837,4 +4847,4 @@
 
     return alooma;
 
-}));
+})));
