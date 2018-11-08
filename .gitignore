@@ -3,3 +3,5 @@ compiler.jar
 .idea
 *.ps1
 *.bundle.js
+package-lock.json
+.DS_Store
