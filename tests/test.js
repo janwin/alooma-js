@@ -432,18 +432,19 @@ mpmodule("alooma.track");
     });
 
     test("should truncate properties to 255 characters", 7, function() {
+        var long_string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc.";
         var props = {
             short_prop: "testing 1 2 3"
-            , long_prop: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc."
+            , long_prop: long_string
             , number: 2342
             , obj: {
-                long_prop: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc."
+                long_prop: long_string
             }
             , num_array: [1,2,3]
-            , longstr_array: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc."]
+            , longstr_array: [long_string]
         };
 
-        var data = alooma.test.track("Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc.", props);
+        var data = alooma.test.track(long_string, props);
 
         same(data.event.length, 255, "event name should be truncated");
         same(data.properties.short_prop, props.short_prop, "short string properties should not be truncated");
@@ -453,6 +454,55 @@ mpmodule("alooma.track");
         same(data.properties.num_array, props.num_array, "sub arrays of numbers should be ignored");
         same(data.properties.longstr_array[0].length, 255, "sub arrays of strings should have truncated values");
     });// truncate properties test
+
+    test("should not truncate properties", 7, function() {
+        alooma.test.set_config({'truncate': Infinity});
+        var long_string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc.";
+        var props = {
+            short_prop: "testing 1 2 3"
+            , long_prop: long_string
+            , number: 2342
+            , obj: {
+                long_prop: long_string
+            }
+            , num_array: [1,2,3]
+            , longstr_array: [long_string]
+        };
+
+        var data = alooma.test.track(long_string, props);
+        same(data.event.length, long_string.length, "event name should not be truncated");
+        same(data.properties.short_prop, props.short_prop, "short string properties should not be truncated");
+        same(data.properties.long_prop.length, long_string.length, "long string properties should not be truncated");
+        same(data.properties.number, props.number, "numbers should be ignored");
+        same(data.properties.obj.long_prop.length, long_string.length, "sub objects should not have truncated values");
+        same(data.properties.num_array, props.num_array, "sub arrays of numbers should be ignored");
+        same(data.properties.longstr_array[0].length, long_string.length, "sub arrays of strings should not have truncated values");
+    });// no truncation test
+
+    test("should truncate properties to custom length", 7, function() {
+        var truncate_limit = 267;
+        alooma.test.set_config({'truncate': truncate_limit});
+        var long_string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In felis ipsum, tincidunt ut cursus ut, venenatis at odio. Vivamus sagittis, velit at porta mattis, metus augue posuere augue, et commodo risus dui non purus. Phasellus varius accumsan urna ut luctus. Duis at lorem diam, in aliquam massa nunc.";
+        var props = {
+            short_prop: "testing 1 2 3"
+            , long_prop: long_string
+            , number: 2342
+            , obj: {
+                long_prop: long_string
+            }
+            , num_array: [1,2,3]
+            , longstr_array: [long_string]
+        };
+
+        var data = alooma.test.track(long_string, props);
+        same(data.event.length, truncate_limit, "event name should not be truncated");
+        same(data.properties.short_prop, props.short_prop, "short string properties should be truncated to " + truncate_limit);
+        same(data.properties.long_prop.length, truncate_limit, "long string properties should be truncated to " + truncate_limit);
+        same(data.properties.number, props.number, "numbers should be ignored");
+        same(data.properties.obj.long_prop.length, truncate_limit, "sub objects should have truncated values to " + truncate_limit);
+        same(data.properties.num_array, props.num_array, "sub arrays of numbers should be ignored");
+        same(data.properties.longstr_array[0].length, truncate_limit, "sub arrays of strings should have truncated values to " + truncate_limit);
+    });// no truncation test
 
     test("should send screen properties", 2, function() {
         var data = alooma.test.track('test', {});
