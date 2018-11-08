@@ -2,6 +2,7 @@ var alooma = require('../build/alooma.cjs');
 
 $('#qunit-tests').addClass('hidepass');
 alooma.init("ALOOMA_TOKEN", {
+    api_host: "",
     cookie_name: "test",
     reset_cookie: true,
     debug: true

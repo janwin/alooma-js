@@ -18,7 +18,7 @@ var mpmodule = function(module_name, extra_setup, extra_teardown) {
             this.token = rand_name();
             this.id = rand_name();
 
-            alooma.init(this.token, { track_pageview: false, debug: true }, "test");
+            alooma.init(this.token, { api_host: '', track_pageview: false, debug: true }, "test");
             _.each(_jsc, function(key) {
                 alooma.test._jsc[key] = function() {};
             });
@@ -530,12 +530,12 @@ if (!window.COOKIE_FAILURE_TEST) {
 
             notOk(cookie.exists(name1), "test cookie should not exist");
 
-            alooma.init(token, {}, "cn1");
+            alooma.init(token, {api_host: ''}, "cn1");
             ok(cookie.exists(name1), "test cookie should exist");
 
             notOk(cookie.exists(name2), "test cookie 2 should not exist");
 
-            alooma.init(token, { cookie_name: "cn2" }, "cn2");
+            alooma.init(token, { api_host: '', cookie_name: "cn2" }, "cn2");
             ok(cookie.exists(name2), "test cookie 2 should exist");
 
             alooma.cn1.cookie.clear();
@@ -577,7 +577,7 @@ if (!window.COOKIE_FAILURE_TEST) {
             cookie.remove(name, true);
             cookie.set(name, alooma._.JSONEncode(c1));
 
-            var ov1 = alooma.init(token, {}, "ov1");
+            var ov1 = alooma.init(token, {api_host: ''}, "ov1");
             ok(contains_obj(ov1.cookie.props, c1), "original cookie values should be loaded");
             clearLibInstance(alooma.ov1);
         });
@@ -594,7 +594,7 @@ if (!window.COOKIE_FAILURE_TEST) {
             cookie.remove('mp_super_properties', true);
             cookie.set('mp_super_properties', alooma._.JSONEncode(c1));
 
-            var cu0 = alooma.init("ajsfjow", { upgrade: true }, "cu0");
+            var cu0 = alooma.init("ajsfjow", { api_host: '', upgrade: true }, "cu0");
 
             notOk(cookie.exists('mp_super_properties'), "upgrade should remove the cookie");
 
@@ -613,7 +613,7 @@ if (!window.COOKIE_FAILURE_TEST) {
             cookie.remove('mp_super_properties_other', true);
             cookie.set('mp_super_properties_other', alooma._.JSONEncode(c2));
 
-            var cu1 = alooma.init("ajsfdjow", { upgrade: 'mp_super_properties_other' }, "cu1");
+            var cu1 = alooma.init("ajsfdjow", { api_host: '', upgrade: 'mp_super_properties_other' }, "cu1");
 
             notOk(cookie.exists('mp_super_properties_other'), "upgrade should remove the cookie");
 
@@ -634,7 +634,7 @@ if (!window.COOKIE_FAILURE_TEST) {
             // Set up a cookie with the tracker name appended, like this one used to.
             cookie.set(old_name, alooma._.JSONEncode(c3));
 
-            var cu2 = alooma.init(token, {}, 'cu2');
+            var cu2 = alooma.init(token, {api_host: ''}, 'cu2');
 
             // Old cookie should be removed when lib is initialized
             notOk(cookie.exists(old_name), "initializing a lib with a custom name should kill off the old name");
@@ -657,7 +657,7 @@ if (!window.COOKIE_FAILURE_TEST) {
             // the current one.
             cookie.set(old_name, alooma._.JSONEncode({ 'c': 'error' }));
 
-            var cu3 = alooma.init(token, { upgrade: true }, 'cu3');
+            var cu3 = alooma.init(token, { api_host: '', upgrade: true }, 'cu3');
 
             notOk(cookie.exists(old_name), "initializing the lib should kill off the old one, even if the correct name exists");
             ok(contains_obj(cu3.cookie.props, c4), "old cookie should be imported");
@@ -674,11 +674,11 @@ if (!window.COOKIE_FAILURE_TEST) {
             cookie.remove(c_name);
             cookie.remove(c_name, true);
 
-            alooma.init("Asdfja", { cookie_name: c_name, disable_cookie: true }, "dc0");
+            alooma.init("Asdfja", { api_host: '', cookie_name: c_name, disable_cookie: true }, "dc0");
 
             notOk(cookie.exists(c_name), "cookie should not exist");
 
-            var dc1 = alooma.init("Asdf", { cookie_name: c_name }, "dc1");
+            var dc1 = alooma.init("Asdf", { api_host: '', cookie_name: c_name }, "dc1");
             dc1.set_config({ disable_cookie: true });
 
             notOk(cookie.exists(c_name), "cookie 2 should not exist");
@@ -757,11 +757,11 @@ if (window.localStorage) {
                 name2 = "mp_sn2";
 
             notOk(!!window.localStorage.getItem(name1), "localStorage entry 1 should not exist");
-            alooma.init(token, {persistence: 'localStorage'}, 'sn1');
+            alooma.init(token, {api_host: '', persistence: 'localStorage'}, 'sn1');
             ok(!!window.localStorage.getItem(name1), "localStorage entry 1 should exist");
 
             notOk(!!window.localStorage.getItem(name2), "localStorage entry 2 should not exist");
-            alooma.init(token, {persistence: 'localStorage', persistence_name: 'sn2'}, 'sn2');
+            alooma.init(token, {api_host: '', persistence: 'localStorage', persistence_name: 'sn2'}, 'sn2');
             ok(!!window.localStorage.getItem(name2), "localStorage entry 2 should exist");
             ok(!!window.localStorage.getItem(name1), "localStorage entry 1 should still exist");
 
@@ -779,7 +779,7 @@ if (window.localStorage) {
             var token = "invperstest",
                 name = "mp_" + token + "_alooma";
 
-            alooma.init(token, {persistence: 'blargh!!!'}, 'ipt1');
+            alooma.init(token, {api_host: '', persistence: 'blargh!!!'}, 'ipt1');
             notOk(!!window.localStorage.getItem(name), "localStorage entry should not exist");
             ok(cookie.exists(name), "Cookie should exist");
 
@@ -791,6 +791,7 @@ if (window.localStorage) {
             window.localStorage.removeItem(sname);
 
             alooma.init('Asdfja', {
+                api_host: '',
                 persistence: 'localStorage',
                 persistence_name: sname,
                 disable_persistence: true
@@ -799,6 +800,7 @@ if (window.localStorage) {
             notOk(!!window.localStorage.getItem(sname), "localStorage entry should not exist");
 
             var ds2 = alooma.init('Asdf', {
+                api_host: '',
                 persistence: 'localStorage',
                 persistence_name: sname
             }, 'ds2');
@@ -830,13 +832,13 @@ if (window.localStorage) {
 
         test("upgrade from cookie", 9, function() {
             // populate cookie
-            var ut1 = alooma.init('UT_TOKEN', {}, 'ut1'),
+            var ut1 = alooma.init('UT_TOKEN', {api_host: ''}, 'ut1'),
                 persistence_name = 'mp_UT_TOKEN_alooma';
             ut1.register({'a': 'b'});
             ok(cookie.exists(persistence_name), "cookie should exist");
 
             // init same project with localStorage
-            var ut2 = alooma.init('UT_TOKEN', {persistence: 'localStorage'}, 'ut2');
+            var ut2 = alooma.init('UT_TOKEN', {api_host: '', persistence: 'localStorage'}, 'ut2');
             ut2.register({'c': 'd'});
             ok(!!window.localStorage.getItem(persistence_name), "localStorage entry should exist");
 
@@ -867,6 +869,7 @@ if (window.localStorage) {
             cookie.remove(full_persistence_name);
 
             var ut = alooma.init('UT_TOKEN', {
+                api_host: '',
                 persistence: 'localStorage',
                 persistence_name: persistence_name
             }, 'ut2');
@@ -893,18 +896,18 @@ mpmodule("alooma");
         var token = 'ASDF',
             sp = { 'test': 'all' };
 
-        alooma.init(token, { persistence_name: 'mpl_t2', track_pageview: false }, 'mpl');
+        alooma.init(token, { api_host: '', persistence_name: 'mpl_t2', track_pageview: false }, 'mpl');
 
         alooma.mpl.register(sp);
         ok(contains_obj(alooma.mpl.persistence.props, sp), "Super properties set correctly");
 
         // Recreate object - should pull super props from persistence
-        alooma.init(token, { persistence_name: 'mpl_t2', track_pageview: false }, 'mpl2');
+        alooma.init(token, { api_host: '', persistence_name: 'mpl_t2', track_pageview: false }, 'mpl2');
         if (!window.COOKIE_FAILURE_TEST) {
             ok(contains_obj(alooma.mpl2.persistence.props, sp), "Super properties saved to persistence");
         }
 
-        alooma.init(token, { persistence_name: 'mpl_t', track_pageview: false }, 'mpl3');
+        alooma.init(token, { api_host: '', persistence_name: 'mpl_t', track_pageview: false }, 'mpl3');
         var props = alooma.mpl3.persistence.properties();
         delete props['distinct_id'];
         same(props, {}, "Super properties shouldn't be loaded from alooma persistence")

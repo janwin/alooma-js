@@ -22,6 +22,19 @@ app.get('/', function(req, res) {
     res.redirect(301, '/tests/');
 });
 
+var handle_request = function(req, res) {
+    if (req.query.verbose) {
+      res.json({"status": 1, "error": null});
+    } else {
+      res.json(1);
+    }
+};
+
+app.get('/track/', handle_request);
+app.get('/engage/', handle_request);
+app.get('/decide/', handle_request);
+
+
 var server = app.listen(3000, function () {
   console.log('Alooma test app listening on port %s', server.address().port);
 });
