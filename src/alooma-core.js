@@ -98,7 +98,7 @@ var HTTP_PROTOCOL = (("https:" == document.location.protocol) ? "https://" : "ht
 var   _ = {}
     , DEBUG = false
     , DEFAULT_CONFIG = {
-          "api_host":               HTTP_PROTOCOL + 'api.alooma.com'
+          "api_host":               HTTP_PROTOCOL + 'inputs.alooma.com'
         , "cross_subdomain_cookie": true
         , "persistence":            "cookie"
         , "persistence_name":       ""
@@ -133,6 +133,8 @@ var   _ = {}
         nativeIsArray = Array.isArray,
         breaker = {};
 
+    var ctor = function(){};
+
     _.bind = function (func, context) {
         var args, bound;
         if (nativeBind && func.bind === nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
@@ -158,8 +160,8 @@ var   _ = {}
     };
 
     /**
-     * @param {*=} obj
-     * @param {function(...[*])=} iterator
+     * @param {Object=} obj
+     * @param {function(...)=} iterator
      * @param {Object=} context
      */
     var each = _.each = function(obj, iterator, context) {
@@ -192,6 +194,9 @@ var   _ = {}
         return escaped;
     };
 
+    /**
+     * @type {function(Object, ...*):Object}
+     */
     _.extend = function(obj) {
         each(slice.call(arguments, 1), function(source) {
             for (var prop in source) {
@@ -516,7 +521,7 @@ _.JSONDecode = (function() { // https://github.com/douglascrockford/JSON-js/blob
                 text:    text
             };
         },
-        next = function (c) {
+        next = function (/** *= */ c) {
             // If a c parameter is provided, verify that it matches the current character.
             if (c && c !== ch) {
                 error("Expected '" + c + "' instead of '" + ch + "'");
@@ -831,7 +836,7 @@ _.UUID = (function() {
     // This function takes the user agent string, and then xors
     // together each sequence of 8 bytes.  This produces a final
     // sequence of 8 bytes which it returns as hex.
-    var UA = function(n) {
+    var UA = function() {
         var ua = userAgent, i, ch, buffer = [], ret = 0;
 
         function xor(result, byte_array) {
@@ -1006,7 +1011,7 @@ _.register_event = (function() {
     /**
      * @param {Object} element
      * @param {string} type
-     * @param {function(...[*])} handler
+     * @param {function(...)} handler
      * @param {boolean=} oldSchool
      */
     var register_event = function(element, type, handler, oldSchool) {
@@ -1295,7 +1300,7 @@ _.info = {
      * include key words used in later checks.
      */
     browser: function(user_agent, vendor, opera) {
-        var vendor = vendor || ''; // vendor is undefined for at least IE9
+        vendor = vendor || ''; // vendor is undefined for at least IE9
         if (opera || _.includes(user_agent, " OPR/")) {
             if (_.includes(user_agent, "Mini")) {
                 return "Opera Mini";
@@ -1450,7 +1455,7 @@ _.info = {
 
 // Console override
 var console = {
-    /** @type {function(...[*])} */
+    /** @type {function(...)} */
     log: function() {
         if (DEBUG && !_.isUndefined(windowConsole) && windowConsole) {
             try {
@@ -1462,7 +1467,7 @@ var console = {
             }
         }
     },
-    /** @type {function(...[*])} */
+    /** @type {function(...)} */
     error: function() {
         if (DEBUG && !_.isUndefined(windowConsole) && windowConsole) {
             var args = ["Alooma error:"].concat(_.toArray(arguments));
@@ -1475,7 +1480,7 @@ var console = {
             }
         }
     },
-    /** @type {function(...[*])} */
+    /** @type {function(...)} */
     critical: function() {
         if (!_.isUndefined(windowConsole) && windowConsole) {
             var args = ["Alooma error:"].concat(_.toArray(arguments));
@@ -1510,7 +1515,7 @@ DomTracker.prototype.init = function(alooma_instance) {
  * @param {string} query
  * @param {string} event_name
  * @param {Object=} properties
- * @param {function(...[*])=} user_callback
+ * @param {function(...)=} user_callback
  */
 DomTracker.prototype.track = function(query, event_name, properties, user_callback) {
     var that = this
@@ -1541,7 +1546,7 @@ DomTracker.prototype.track = function(query, event_name, properties, user_callba
 };
 
 /**
- * @param {function(...[*])} user_callback
+ * @param {function(...)} user_callback
  * @param {Object} props
  * @param {boolean=} timeout_occured
  */
@@ -2017,8 +2022,8 @@ AloomaPersistence.prototype._get_queue = function(queue) {
     return this['props'][this._get_queue_key(queue)];
 };
 AloomaPersistence.prototype._get_or_create_queue = function(queue, default_val) {
-    var key = this._get_queue_key(queue),
-        default_val = _.isUndefined(default_val) ? {} : default_val;
+    var key = this._get_queue_key(queue);
+    default_val = _.isUndefined(default_val) ? {} : default_val;
 
     return this['props'][key] || (this['props'][key] = default_val);
 };
@@ -2529,7 +2534,6 @@ AloomaLib.prototype.track = function(event_name, properties, callback) {
  * track_pageview configuration variable is false.
  *
  * @param {String} [page] The url of the page to record. If you don't include this, it defaults to the current url.
- * @api private
  */
 AloomaLib.prototype.track_pageview = function(page) {
     if (_.isUndefined(page)) { page = document.location.href; }
@@ -2809,7 +2813,6 @@ AloomaLib.prototype.alias = function(alias, original) {
  * This value will only be included in Streams data.
  *
  * @param {String} name_tag A human readable name for the user
- * @api private
  */
 AloomaLib.prototype.name_tag = function(name_tag) {
     this._register_single('mp_name_tag', name_tag);
@@ -3265,7 +3268,7 @@ AloomaPeople.prototype._send_request = function(data, callback) {
     data['$distinct_id'] = this._alooma.get_distinct_id();
 
     var date_encoded_data = _.encodeDates(data)
-      , truncated_data    = _.truncate(date_encoded_data, this.get_config('truncate'))
+      , truncated_data    = _.truncate(date_encoded_data, this._get_config('truncate'))
       , json_data         = _.JSONEncode(date_encoded_data)
       , encoded_data      = _.base64Encode(json_data);
 
