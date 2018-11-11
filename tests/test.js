@@ -992,10 +992,10 @@ mpmodule("alooma");
         alooma.test.persistence.update_referrer_info("");
 
         // If referrer is missing, we want to mark it as None (type-in)
-        ok(alooma.test.persistence.props[i_ref] === none_val, "ealooma.testty referrer should mark $initial_referrer as None");
-        ok(alooma.test.persistence.props[i_ref_d] === none_val, "ealooma.testty referrer should mark $initial_referring_domain as None");
+        ok(alooma.test.persistence.props[i_ref] === none_val, "empty referrer should mark $initial_referrer as None");
+        ok(alooma.test.persistence.props[i_ref_d] === none_val, "empty referrer should mark $initial_referring_domain as None");
 
-        var ref = "http://exaalooma.testle.com/a/b/?c=d";
+        var ref = "http://example.com/a/b/?c=d";
         // Now we update, but the vals should remain None.
         alooma.test.persistence.update_referrer_info(ref);
         equal(alooma.test.persistence.props[i_ref], none_val, "$inital_referrer should remain None, even after getting a referrer");
@@ -1005,7 +1005,7 @@ mpmodule("alooma");
         alooma.test.persistence.clear();
         alooma.test.persistence.update_referrer_info(ref);
         equal(alooma.test.persistence.props[i_ref], ref, "Full referrer should be saved");
-        equal(alooma.test.persistence.props[i_ref_d], "exaalooma.testle.com", "Just domain should be saved");
+        equal(alooma.test.persistence.props[i_ref_d], "example.com", "Just domain should be saved");
     });
 
     test("current url set correctly", 2, function() {
