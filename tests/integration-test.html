@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="vendor/qunit.css" type="text/css" media="screen">
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script type="text/javascript" src="vendor/jquery.qunit.js?v=159"></script>
+        <script type="text/javascript" src="vendor/sinon.js?v=159"></script>
+        <script type="text/javascript" src="vendor/underscore.js"></script>
+        <script type="text/javascript" src="integration-test.js"></script>
+        <link rel="stylesheet" type="text/css" href="tests.css">
+    </head>
+    <body>
+        <h1 id="qunit-header">lib 2.2 <a id="other-test" href="/tests/">other tests</a></h1>
+        <h2 id="qunit-banner"></h2>
+        <div id="qunit-testrunner-toolbar"></div>
+        <h2 id="qunit-userAgent"></h2>
+        <ol id="qunit-tests"></ol>
+        <div id="qunit-fixture"></div>
+        <script type="text/javascript" src="redirect-unless-referrer.js"></script>
+        <script type="text/javascript" src="../alooma-jslib-snippet.min.test.js"></script>
+        <script type="text/javascript">
+            var getUrlParameter = function getUrlParameter(sParam) {
+                var sPageURL = window.location.search.substring(1),
+                    sURLVariables = sPageURL.split('&'),
+                    sParameterName,
+                    i;
+
+                for (i = 0; i < sURLVariables.length; i++) {
+                    sParameterName = sURLVariables[i].split('=');
+
+                    if (sParameterName[0] === sParam) {
+                        return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+                    }
+                }
+            };
+
+            $('#qunit-tests').addClass('hidepass');
+            var alooma_token = getUrlParameter("token");
+            var alooma_endpoint = getUrlParameter("endpoint");
+            alooma.init(alooma_token,
+            {
+                api_host: alooma_endpoint,
+                cookie_name: "test",
+                reset_cookie: true,
+                debug: true,
+                loaded: function(alooma) {
+                    integration_test_alooma(alooma, alooma_token, alooma_endpoint);
+                }
+            });
+
+            integration_test_async(alooma);
+
+        </script>
+
+    </body>
+</html>
