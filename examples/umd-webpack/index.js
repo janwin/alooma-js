@@ -1,7 +1,7 @@
 var alooma = require('../../build/alooma.umd.js');
 
 alooma.init("FAKE_TOKEN", {
-    api_host: "".
+    api_host: "",
     debug: true,
     loaded: function() {
         alooma.track('loaded() callback works but is unnecessary');

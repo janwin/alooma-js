@@ -6,6 +6,7 @@ var _loaderModule = _interopRequireDefault(require("../../src/loader-module"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _loaderModule.default.init("FAKE_TOKEN", {
+  api_host: "",
   debug: true,
   loaded: function loaded() {
     _loaderModule.default.track('loaded() callback works but is unnecessary');
